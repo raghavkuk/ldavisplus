@@ -1,6 +1,8 @@
 # Django imports
 from django.shortcuts import render
 from django.views import View
+from django.http import JsonResponse
+from django.core.serializers.json import DjangoJSONEncoder
 
 # Third party imports
 from sklearn.decomposition import LatentDirichletAllocation
@@ -10,10 +12,11 @@ import pandas as pd
 from scipy.spatial.distance import squareform
 from scipy.spatial.distance import pdist
 from sklearn.decomposition import PCA
-
+import json
 
 # Application imports
 from .models import Document
+
 
 def lda(request):
     objs = Document.objects.filter(dataset_type=1)
@@ -270,10 +273,5 @@ def lda(request):
     dict_return["lambda.step"] = lambda_step
     dict_return["topic.order"] = [int(int(i) + 1) for i in o.tolist()]
 
-    print(dict_return)
-
-    import json
-    with open('data1.json', 'w') as outfile:
-        json.dump(dict_return, outfile)
-
-    return render(request, "lda.html", {'total_docs': total_docs, 'data': dict_return})
+    lda_json = json.dumps(dict_return, cls=DjangoJSONEncoder)
+    return render(request, "index.html", {'total_docs': total_docs, 'data': lda_json})
