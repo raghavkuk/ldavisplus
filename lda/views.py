@@ -32,7 +32,7 @@ def lda(request):
 
     word_dict = tf_vectorizer.vocabulary_
 
-    n_topics = 20
+    n_topics = 10
     lda_model = LatentDirichletAllocation(n_components=n_topics, max_iter=5, learning_method='online', learning_offset=50., random_state=0).fit(tf)
     
     # Shape of lda components is (n_topics * no_features)
@@ -240,9 +240,9 @@ def lda(request):
     mds_df_dict = {
         "x": mds_df['x'].tolist(),
         "y": mds_df['y'].tolist(),
-        "topics": mds_df['topics'].tolist(),
+        "topics": [int(int(i) + 1) for i in mds_df['topics'].tolist()],
         "Freq": mds_df['Freq'].tolist(),
-        "cluster": mds_df['cluster'].tolist() 
+        "cluster": mds_df['cluster'].tolist()
     }
 
     tinfo_unq_dict = {
@@ -254,21 +254,26 @@ def lda(request):
         "Category": tinfo_unq['Category'].tolist()
     }
 
+    # print(dd['Topic'].tolist())
 
     dd_dict = {
-        'Term':dd['Term'].tolist(),
-        'Topic':dd['Topic'].tolist(),
-        'Freq':dd['Freq'].tolist()
+        "Term":dd['Term'].tolist(),
+        "Topic":[int(int(i[5:]) + 1) for i in dd['Topic'].tolist()],
+        "Freq":dd['Freq'].tolist()
     }
 
     dict_return = {}
-    dict_return['mdsDat'] = mds_df_dict
-    dict_return['tinfo'] = tinfo_unq_dict
-    dict_return['token_table'] = dd_dict
-    dict_return['R'] = R
-    dict_return['lambda_step'] = lambda_step
-    dict_return['topic_order'] =  o.tolist()
+    dict_return["mdsDat"] = mds_df_dict
+    dict_return["tinfo"] = tinfo_unq_dict
+    dict_return["token.table"] = dd_dict
+    dict_return["R"] = R
+    dict_return["lambda.step"] = lambda_step
+    dict_return["topic.order"] = [int(int(i) + 1) for i in o.tolist()]
 
     print(dict_return)
+
+    import json
+    with open('data1.json', 'w') as outfile:
+        json.dump(dict_return, outfile)
 
     return render(request, "lda.html", {'total_docs': total_docs, 'data': dict_return})

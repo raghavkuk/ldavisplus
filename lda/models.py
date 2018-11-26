@@ -8,7 +8,10 @@ DATASET_CHOICES = (
 
 class Document(models.Model):
 
-    text = models.TextField()
+    text = models.TextField(null=True)
+    tag = models.TextField(null=True)
+    sentiment_polarity = models.TextField(null=True)
+    sentiment_confidence = models.DecimalField(max_digits=5, decimal_places=2, default=0.0)
     dataset_type = models.IntegerField(choices=DATASET_CHOICES)
 
     def __str__(self):
