@@ -73,6 +73,21 @@ function init_params(json_data) {
     setupTermBarGraph();
 
     setupTermLegend();
+
+    sentimentSvg = d3.select(sentimentDiv)
+                        .append("svg")
+                        .attr("width", sentimentVisWidth + margin.left + margin.right)
+                        .attr("height", sentimentVisHeight + 2 * margin.top + margin.bottom + maxTopicRadius)
+                        .attr("class", "tooltip");
+
+    setupSentimentVis();
+
+    forceDirSvg = d3.select(forceDirDiv)
+                        .append("svg")
+                        .attr("width", forceDirWidth + margin.left + margin.right)
+                        .attr("height", forceDirHeight + 2 * margin.top + margin.bottom + maxTopicRadius);
+
+    setupForceDirVis();
 }
 
 

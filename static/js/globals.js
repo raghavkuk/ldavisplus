@@ -36,7 +36,7 @@ var forceDirWidth = 530;
 var forceDirHeight = 530;
 var sentimentVisWidth = 530;
 var sentimentVisHeight = 530;
-var interPanelWidth = 90;
+var interPanelWidth = 110;
 
 var visArea = topicVisWidth * topicVisHeight;
 var visSvg;
