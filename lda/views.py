@@ -36,6 +36,11 @@ def lda(request):
     word_dict = tf_vectorizer.vocabulary_
 
     n_topics = 10
+    if(request.POST):
+        print("**************************************")
+        n_topics = int(request.POST.get('numTopics'))
+        print(type(n_topics), request.POST.get('numTopics'))
+        print("**************************************")
     lda_model = LatentDirichletAllocation(n_components=n_topics, max_iter=5, learning_method='online', learning_offset=50., random_state=0).fit(tf)
     
     # Shape of lda components is (n_topics * no_features)

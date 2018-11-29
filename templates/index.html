@@ -8,6 +8,23 @@
   </head>
 
   <body>
+    <div id = "topics" style="margin-bottom: 20px;">
+      <p style="margin-bottom: 5px;">Number of topics</p>
+      <form action="" method="POST">
+        {% csrf_token %}
+        <input type="radio" name="numTopics" value="5"/>
+        <label style="margin-right: 20px;">5</label>
+
+        <input type="radio" name="numTopics" value="10"/>
+        <label style="margin-right: 20px;">10</label>
+
+        <input type="radio" name="numTopics" value="15"/>
+        <label style="margin-right: 20px;">15</label>
+
+        <input type="submit" value="Submit">
+      </form>
+
+    </div>
     <div id = "lda"></div>
     <div id = "sentimentDiv" style = "float: left;"></div>
     <div id = "forceDirDiv" style = "float: left;"></div>
