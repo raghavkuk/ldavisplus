@@ -563,5 +563,9 @@ function reorderBars(isGreater) {
         newAxis.transition().duration(transitionDuration)
             .transition().duration(transitionDuration)
             .call(xAxis);
+
     }
+
+    initializeForceVisData();
+    setupForceDirVis();
 }

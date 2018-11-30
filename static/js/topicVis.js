@@ -221,20 +221,22 @@ function updateSentimentVis(){
     //Scale function for axes and radius
     var padding = 25;
     var topicSelected = visState.topic;
-    // //Scale function for axes and radius
-    // var max = sentimentData[topicSelected-1][0].conf;
-    // var min = sentimentData[topicSelected-1][0].conf;
+    //Scale function for axes and radius
+    var max = sentimentData[topicSelected-1][0].conf;
+    var min = sentimentData[topicSelected-1][0].conf;
 
-    // for(var i=0; i<sentimentData[topicSelected-1].length; i++){
-    //     if(sentimentData[topicSelected-1][i].conf < min)
-    //         min = sentimentData[topicSelected-1][i].conf;
-    //     if(sentimentData[topicSelected-1][i].conf > max)
-    //         max = sentimentData[topicSelected-1][i].conf;
-    // }
+    for(var i=0; i<sentimentData[topicSelected-1].length; i++){
+        if(sentimentData[topicSelected-1][i].conf < min)
+            min = sentimentData[topicSelected-1][i].conf;
+        if(sentimentData[topicSelected-1][i].conf > max)
+            max = sentimentData[topicSelected-1][i].conf;
+    }
+
+    min = min < 0 ? min : 0;
 
     var yScale = d3.scale.linear()
-        // .domain([min, max])
-        .domain(d3.extent(sentimentData[topicSelected-1], function(d) { return d.conf; }))
+        .domain([min, max])
+        // .domain(d3.extent(sentimentData[topicSelected-1], function(d) { return d.conf; }))
         .range([sentimentVisWidth + padding, padding]);
 
     var xScale = d3.scale.ordinal()

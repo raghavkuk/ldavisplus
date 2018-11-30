@@ -19,8 +19,8 @@ function setupForceDirVis() {
     var minZoom = 0.1;
     var maxZoom = 7;
 
-    var min_score = 0;
-    var max_score = 0.8;
+    var min_score = 0.1;
+    var max_score = 0.7;
 
     var zoom = d3.behavior.zoom()
         .scaleExtent([minZoom, maxZoom]);
@@ -31,8 +31,8 @@ function setupForceDirVis() {
         .range(["#1f77b4", "#d62728"]);
 
     var size = d3.scale.pow().exponent(1)
-        .domain([0, 30])
-        .range([5, 10]);
+        .domain([200, 1700])
+        .range([3, 10]);
 
     // if(typeof forceDirSvg !== "undefined")
         d3.select(forceDirDiv).html("");
@@ -97,7 +97,8 @@ function setupForceDirVis() {
         .enter().append("line")
         .attr("class", "link")
         .style("stroke-width", function(d){
-            return countOccurences(edges, d.source)*countOccurences(edges, d.source)/1000;
+            var x =  countOccurences(edges, d.source);
+            return d.source.weight*d.target.weight/30;
         })
         .style("stroke", function(d) {
             if (isNumber(d.score) && d.score >= 0)
@@ -152,7 +153,7 @@ function setupForceDirVis() {
 
     var circle = node.append("path")
         .attr("d", d3.svg.symbol()
-            .size(function(d) { return Math.PI * Math.pow(size(d['size']) || baseNodeSize, 3); })
+            .size(function(d) { return Math.PI * Math.pow(size(d['size']) || baseNodeSize, 0.9); })
             .type(function(d) { return "circle"; }))
 
         .style(toColor, function(d) {
@@ -170,7 +171,7 @@ function setupForceDirVis() {
         .attr("dy", ".35em")
         .style("font-size", normalTextSize + "px")
         .attr("dx", function(d) {
-            return (size(d['size']) || baseNodeSize);
+            return (baseNodeSize);
         })
         .text(function(d) { return '\u2002' + d['name']; });
 
@@ -211,7 +212,7 @@ function setupForceDirVis() {
     }
 
     function isConnected(a, b) {
-        return connections[a.index + "," + b.index] || connections[b.index + "," + a.index] || a.index == b.index;
+        return connections[a.id + "," + b.id] || connections[b.id + "," + a.id] || a.id == b.id;
     }
 
     function exitFocus() {

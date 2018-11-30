@@ -4,19 +4,21 @@ function setupSentimentVis() {
     var topicSelected = visState.topic;
 
     //Scale function for axes and radius
-    // var max = sentimentData[topicSelected-1][0].conf;
-    // var min = sentimentData[topicSelected-1][0].conf;
+    var max = sentimentData[topicSelected-1][0].conf;
+    var min = sentimentData[topicSelected-1][0].conf;
 
-    // for(var i=0; i<sentimentData[topicSelected-1].length; i++){
-    // 	if(sentimentData[topicSelected-1][i].conf < min)
-    // 		min = sentimentData[topicSelected-1][i].conf;
-    // 	if(sentimentData[topicSelected-1][i].conf > max)
-    // 		max = sentimentData[topicSelected-1][i].conf;
-    // }
+    for(var i=0; i<sentimentData[topicSelected-1].length; i++){
+    	if(sentimentData[topicSelected-1][i].conf < min)
+    		min = sentimentData[topicSelected-1][i].conf;
+    	if(sentimentData[topicSelected-1][i].conf > max)
+    		max = sentimentData[topicSelected-1][i].conf;
+    }
+
+    min = min < 0 ? min : 0;
 
     var yScale = d3.scale.linear()
-        // .domain([min-0.2, max+0.3])
-        .domain(d3.extent(sentimentData[topicSelected-1], function(d) { return d.conf; }))
+        .domain([min, max])
+        // .domain(d3.extent(sentimentData[topicSelected-1], function(d) { return d.conf; }))
         .range([sentimentVisWidth + padding, padding]);
 
     var xScale = d3.scale.ordinal()
@@ -72,8 +74,9 @@ function setupSentimentVis() {
                 .style("top", (d3.event.pageY - 30) + "px")
                 .text("Document: " + d.doc_id);
 
+            // var perc = formatPercent(d.conf);
             info.append("p")
-                    .text("Confidence: " + formatPercent(d.conf));
+                    .text("Confidence: " + formatPercent(Math.abs(d.conf)));
 
 
 
@@ -82,6 +85,8 @@ function setupSentimentVis() {
             d3.select(this)
                 .style({ 'stroke-opacity': 0.5, 'stroke': '#a8a8a8' })
                 .style("opacity", 1);
+
+            tooltipDiv.style("opacity", 0);
 
         });
 

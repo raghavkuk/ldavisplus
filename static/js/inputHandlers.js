@@ -17,6 +17,9 @@ function setupClickNextTopicHandler(nextTopic) {
             onTopicUnseleted(document.getElementById(topicId + existingTopicValue));
             onTopicSelected(document.getElementById(topicId + newTopicValue));
             visState.topic = newTopicValue;
+            initializeForceVisData();
+            setupForceDirVis();
+            updateSentimentVis();
             stateSave(true);
         });
 }
@@ -39,6 +42,9 @@ function setupClickPreviousTopicHandler(prevTopic) {
             onTopicUnseleted(document.getElementById(topicId + existingTopicValue));
             onTopicSelected(document.getElementById(topicId + newTopicValue));
             visState.topic = newTopicValue;
+            initializeForceVisData();
+            setupForceDirVis();
+            updateSentimentVis();
             stateSave(true);
         });
 }
@@ -63,6 +69,9 @@ function setupClickTopicCircleHandler(topicId) {
                 visState.topic = newTopicValue;
                 stateSave(true);
                 document.getElementById(topicId).value = visState.topic;
+                initializeForceVisData();
+                setupForceDirVis();
+                updateSentimentVis();
             }
         });
 }

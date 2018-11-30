@@ -767,14 +767,14 @@ function initializeForceVisData() {
                 var obj1 = {};
                 obj1['source'] = row;
                 obj1['target'] = col;
-                // obj1['"score"'] = cooc;
+                // obj1['score'] = cooc;
 
                 var obj2 = {};
                 obj2['source'] = row;
                 obj2['target'] = col;
-                // obj2['"score"'] = cooc;
+                // obj2['score'] = cooc;
 
-                if (!forceLinks.includes(obj1) && !forceLinks.includes(obj2) )
+                if (!forceLinks.includes(obj1) && !forceLinks.includes(obj2) && cooc > 200)
                     forceLinks.push(obj1);
             }
 
@@ -803,7 +803,7 @@ function initializeForceVisData() {
 
             var obj = {};
 
-            obj['size'] = topTermsData[i].logprob/30 * topTermsData[i].logprob/30;
+            obj['size'] = topTermsData[i].Freq / 300;
             obj['id'] = vocab.indexOf(topTermsData[i].Term);
             obj['name'] = topTermsData[i].Term;
             obj['score'] = topTermsData[i].loglift/30 * topTermsData[i].loglift/30;
