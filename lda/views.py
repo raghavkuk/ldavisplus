@@ -9,6 +9,7 @@ from sklearn.decomposition import LatentDirichletAllocation
 from sklearn.feature_extraction.text import CountVectorizer
 import numpy as np
 import pandas as pd
+import math
 from scipy.spatial.distance import squareform
 from scipy.spatial.distance import pdist
 from sklearn.decomposition import PCA
@@ -28,34 +29,97 @@ def lda(request):
     objs = Document.objects.filter(dataset_type=dataset_type)
     docs = []
     doc_length = []
+    sentiment_confidence_list = []
+    sentiment_polarity_list = []
     for o in objs:
         docs.append(o.text)
+        sentiment_confidence_list.append(o.sentiment_confidence)
+        sentiment_polarity_list.append(o.sentiment_polarity)
         doc_length.append(len(o.text.split()))
     total_docs = len(docs)
     doc = Document.objects.first()
 
     no_features = 1000
+
     tf_vectorizer = CountVectorizer(max_df=0.95, min_df=2, max_features=no_features, stop_words='english')
     tf = tf_vectorizer.fit_transform(docs)
+#     print(tf.todense().shape)
+    cooc = []
+    counts = tf.todense()
+    # print(counts)
+    # print(counts.shape)
+    
+    for i in range(counts.shape[1]):
+        a = []
+        for j in range(counts.shape[1]):
+            if(i!=j):
+                w1 = counts[:,i]
+                w2 = counts[:,j]
+                a.append(int(np.sum(((w1>0)+0 + (w2>0)+0) == 2)))
+#                 print(w1.shape)
+#                 print((w2>0)+0)
+#                 print(w2.shape)
+#                 a.append(int(np.sum((w1>0)==(w2>0))))
+            if(i==j):
+                a.append(0)
+#         import sys
+#         sys.exit()
+        cooc.append(a)
+#     print("cooc")
+#     print(cooc)
+#     print(cooc.shape)
+    
     tf_feature_names = tf_vectorizer.get_feature_names()
-
+#     print(tf_feature_names)
     word_dict = tf_vectorizer.vocabulary_
 
     lda_model = LatentDirichletAllocation(n_components=n_topics, max_iter=5, learning_method='online', learning_offset=50., random_state=0).fit(tf)
-    
+
     # Shape of lda components is (n_topics * no_features)
     # print(lda_model.components_)
-    
+
     vocab = ['']*len(word_dict.keys())
     # print(len(word_dict))
 
     for key, value in word_dict.items():
         vocab[value] = key
-    
-    # print(vocab)
+
+#     print(vocab)
 
     phi = lda_model.components_
     theta = lda_model.transform(tf)
+    
+    
+#     print(theta)
+#     print(np.argsort(theta, axis=0))
+#     print(np.argsort(theta, axis=0)[-sentiment_doc_count:,:])
+    sentiment_doc_count = 15
+    aa = (np.argsort(theta, axis=0)[::-1,:][:sentiment_doc_count,:])
+#     print(aa)
+    sentiment_confidence_list_v = np.vectorize(lambda x: sentiment_confidence_list[x])
+    sentiment_polarity_list_v = np.vectorize(lambda x: sentiment_polarity_list[x])
+    sent_conf = sentiment_confidence_list_v(aa)
+    sent_pol = sentiment_polarity_list_v(aa)
+    d_sentiment = []
+    for i in range(1,n_topics+1):
+        dd_ = []
+        doc_id = 1
+        for x, y in zip(sent_conf[:,i-1], sent_pol[:,i-1]):
+            x_ = None
+            if(y=='negative'):
+                x_ = float(-x)
+            elif(y=='positive'):
+                x_ = (1.0+float(x))/2.0
+            elif(y=='neutral'):
+                x_ = (1.0-float(x))/2.0
+            dd_.append({"pol": y, "conf":x_, "doc_id": doc_id})
+            doc_id = doc_id+1
+        d_sentiment.append(dd_)
+        
+#     print(d_sentiment)
+#     import sys
+#     sys.exit()
+    
     R = 30
     lambda_step = 0.01
     lambda_seq = [i/100 for i in range(0,100+1)]
@@ -277,6 +341,11 @@ def lda(request):
     dict_return["R"] = R
     dict_return["lambda.step"] = lambda_step
     dict_return["topic.order"] = [int(int(i) + 1) for i in o.tolist()]
+    dict_return["topic.sentiment"] = d_sentiment
+    dict_return["cooc_word_by_word"] = cooc
+    dict_return["vocab"] = vocab.ravel().tolist()
+    
+    print(np.max(cooc))
 
     lda_json = json.dumps(dict_return, cls=DjangoJSONEncoder)
     return render(request, "index.html", {'total_docs': total_docs, 'data': lda_json})
