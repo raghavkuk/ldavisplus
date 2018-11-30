@@ -39,15 +39,12 @@ def lda(request):
     total_docs = len(docs)
     doc = Document.objects.first()
 
-    no_features = 1000
+    no_features = 150
 
     tf_vectorizer = CountVectorizer(max_df=0.95, min_df=2, max_features=no_features, stop_words='english')
     tf = tf_vectorizer.fit_transform(docs)
-#     print(tf.todense().shape)
     cooc = []
     counts = tf.todense()
-    # print(counts)
-    # print(counts.shape)
     
     for i in range(counts.shape[1]):
         a = []
@@ -56,46 +53,25 @@ def lda(request):
                 w1 = counts[:,i]
                 w2 = counts[:,j]
                 a.append(int(np.sum(((w1>0)+0 + (w2>0)+0) == 2)))
-#                 print(w1.shape)
-#                 print((w2>0)+0)
-#                 print(w2.shape)
-#                 a.append(int(np.sum((w1>0)==(w2>0))))
             if(i==j):
                 a.append(0)
-#         import sys
-#         sys.exit()
         cooc.append(a)
-#     print("cooc")
-#     print(cooc)
-#     print(cooc.shape)
     
     tf_feature_names = tf_vectorizer.get_feature_names()
-#     print(tf_feature_names)
     word_dict = tf_vectorizer.vocabulary_
 
     lda_model = LatentDirichletAllocation(n_components=n_topics, max_iter=5, learning_method='online', learning_offset=50., random_state=0).fit(tf)
 
     # Shape of lda components is (n_topics * no_features)
-    # print(lda_model.components_)
-
     vocab = ['']*len(word_dict.keys())
-    # print(len(word_dict))
-
     for key, value in word_dict.items():
         vocab[value] = key
 
-#     print(vocab)
-
     phi = lda_model.components_
     theta = lda_model.transform(tf)
-    
-    
-#     print(theta)
-#     print(np.argsort(theta, axis=0))
-#     print(np.argsort(theta, axis=0)[-sentiment_doc_count:,:])
+
     sentiment_doc_count = 15
     aa = (np.argsort(theta, axis=0)[::-1,:][:sentiment_doc_count,:])
-#     print(aa)
     sentiment_confidence_list_v = np.vectorize(lambda x: sentiment_confidence_list[x])
     sentiment_polarity_list_v = np.vectorize(lambda x: sentiment_polarity_list[x])
     sent_conf = sentiment_confidence_list_v(aa)
@@ -115,22 +91,12 @@ def lda(request):
             dd_.append({"pol": y, "conf":x_, "doc_id": doc_id})
             doc_id = doc_id+1
         d_sentiment.append(dd_)
-        
-#     print(d_sentiment)
-#     import sys
-#     sys.exit()
-    
+
     R = 30
     lambda_step = 0.01
     lambda_seq = [i/100 for i in range(0,100+1)]
     dense_mat = np.array(tf.todense().sum(axis=0))
     tem_freq = list(dense_mat[0,:])
-    # print(doc_length)
-
-    ################################################################
-    ################################################################
-    ###############################################################
-
 
     def jsPCA(X):
 
@@ -182,11 +148,6 @@ def lda(request):
     topic_proportion_o = topic_proportion[o]
 
     ## this was calculated using R PCA
-
-    # mds_res = np.array([[-0.01031051, 0.03131592],
-    # [-0.05265725, -0.01984672],
-    # [0.06296776, -0.01146921]])
-
     mds_res = jsPCA(phi_np_o)
 
     # import pandas as pd
@@ -224,11 +185,6 @@ def lda(request):
     counts = counts.astype(int)
 
     Rs = [i for i in range(R)][::-1]
-
-    # default <- data.frame(Term = default_terms, logprob = Rs, loglift = Rs, 
-    #                       Freq = counts, Total = counts, Category = "Default", 
-    #                       stringsAsFactors = FALSE)
-
 
     default = pd.DataFrame(columns = ['Term', 'logprob', 'loglift', 'Freq', 'Total', 'Category'])
 
@@ -344,8 +300,9 @@ def lda(request):
     dict_return["topic.sentiment"] = d_sentiment
     dict_return["cooc_word_by_word"] = cooc
     dict_return["vocab"] = vocab.ravel().tolist()
-    
-    print(np.max(cooc))
+
+    # with open(str(dataset_type) + '-' + str(n_topics) + '.json', 'w') as outfile:
+    #     json.dump(dict_return, outfile)
 
     lda_json = json.dumps(dict_return, cls=DjangoJSONEncoder)
     return render(request, "index.html", {'total_docs': total_docs, 'data': lda_json})
