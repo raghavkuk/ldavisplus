@@ -24,7 +24,8 @@ var lambda = {
 }
 
 var baseColor = "#1f77b4";
-var highlightColor = "#d62728";
+// var highlightColor = "#d62728";
+var highlightColor = "#112E59"
 
 var transitionDuration = 750;
 

@@ -98,7 +98,7 @@ function setupForceDirVis() {
         .attr("class", "link")
         .style("stroke-width", function(d){
             var x =  countOccurences(edges, d.source);
-            return d.source.weight*d.target.weight/30;
+            return (d.source.weight+d.target.weight)*(d.source.weight+d.target.weight)/400;
         })
         .style("stroke", function(d) {
             if (isNumber(d.score) && d.score >= 0)
@@ -175,6 +175,12 @@ function setupForceDirVis() {
         })
         .text(function(d) { return '\u2002' + d['name']; });
 
+    var legend = forceDirSvg.append("text")
+                    .attr("x", "50")
+                    .attr("y", forceDirHeight + 45)
+                    .style("font-size", "16px")
+                    .text("Co-Occurence of the top terms for the selected topic.");
+
 
     forceLayout.on("tick", function() {
 
@@ -189,6 +195,13 @@ function setupForceDirVis() {
         node.attr("cx", function(d) { return d.x; })
             .attr("cy", function(d) { return d.y; });
     });
+
+    // d3.select(forceDirDiv)
+    //     .append("text")
+    //     .attr("x", 5)
+    //     .attr("y", forceDirHeight + 10)
+    //     // .style("dominant-baseline", "middle")
+    //     .text("Co-Occurence of the top terms for the selected topic.");
 
 
     function isNumber(n) {

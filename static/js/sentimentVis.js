@@ -95,4 +95,10 @@ function setupSentimentVis() {
         .attr("class", "y axis")
         .attr("transform", "translate(40,0)")
         .call(yAxis);
+
+    var legend = sentimentSvg.append("text")
+                    .attr("x", "50")
+                    .attr("y", sentimentVisWidth + 45)
+                    .style("font-size", "16px")
+                    .text("Sentiments of the top 15 documents for the selected topic.");
 }
