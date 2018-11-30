@@ -1,27 +1,26 @@
 function setupSentimentVis() {
 
-    var dataset = [
-        { "document": 1, "polarity": 0.76, "category": "positive" },
-        { "document": 2, "polarity": 0.24, "category": "positive" },
-        { "document": 3, "polarity": -0.54, "category": "negative" },
-        { "document": 4, "polarity": 0.90, "category": "positive" },
-        { "document": 5, "polarity": -0.66, "category": "negative" },
-        { "document": 6, "polarity": -0.20, "category": "negative" },
-        { "document": 7, "polarity": 0.70, "category": "positive" },
-        { "document": 8, "polarity": -0.85, "category": "negative" },
-        { "document": 9, "polarity": 0.40, "category": "positive" },
-        { "document": 10, "polarity": 0.55, "category": "positive" }
-    ]
-
     var padding = 25;
+    var topicSelected = visState.topic;
 
     //Scale function for axes and radius
+    // var max = sentimentData[topicSelected-1][0].conf;
+    // var min = sentimentData[topicSelected-1][0].conf;
+
+    // for(var i=0; i<sentimentData[topicSelected-1].length; i++){
+    // 	if(sentimentData[topicSelected-1][i].conf < min)
+    // 		min = sentimentData[topicSelected-1][i].conf;
+    // 	if(sentimentData[topicSelected-1][i].conf > max)
+    // 		max = sentimentData[topicSelected-1][i].conf;
+    // }
+
     var yScale = d3.scale.linear()
-        .domain(d3.extent(dataset, function(d) { return d.polarity; }))
+        // .domain([min-0.2, max+0.3])
+        .domain(d3.extent(sentimentData[topicSelected-1], function(d) { return d.conf; }))
         .range([sentimentVisWidth + padding, padding]);
 
     var xScale = d3.scale.ordinal()
-        .domain(dataset.map(function(d) { return d.document; }))
+        .domain(sentimentData[topicSelected - 1].map(function(d) { return d.doc_id; }))
         .rangeRoundBands([padding, sentimentVisHeight + padding], .5);
 
     //To format axis as a percent
@@ -31,32 +30,51 @@ function setupSentimentVis() {
     var yAxis = d3.svg.axis().scale(yScale).orient("left").ticks(5).tickFormat(formatPercent);
 
     //Define key function
-    var key = function(d) { return d.document };
+    var key = function(d) { return d.doc_id };
 
-    div = d3.select(sentimentDiv);
+    var tooltipDiv = d3.select(sentimentDiv).append("div")   
+  							.attr("class", "tooltip")               
+  							.style("opacity", 0);;
 
     //Create barchart
     sentimentSvg.selectAll("rect")
-        .data(dataset, key)
+        .data(sentimentData[topicSelected - 1], key)
         .enter()
         .append("rect")
-        .attr("class", function(d) { return d.category == "negative" ? "negative" : "positive"; })
+        .attr("class", function(d) {
+            if (d.pol == "positive")
+                return "positive";
+            else if (d.pol == "negative")
+                return "negative";
+            else
+                return "neutral";
+        })
         .attr({
             x: function(d) {
-                return xScale(d.document);
+                return xScale(d.doc_id);
             },
             y: function(d) {
-                return yScale(Math.max(0, d.polarity));
+                return yScale(Math.max(0, d.conf));
             },
             width: xScale.rangeBand(),
             height: function(d) {
-                return Math.abs(yScale(d.polarity) - yScale(0));
+                return Math.abs(yScale(d.conf) - yScale(0));
             }
         })
         .on('mouseover', function(d) {
             d3.select(this)
-                .style("opacity", 0.2)
-                .style("stroke", "black")
+                .style("opacity", 0.5)
+                .style("stroke", "black");
+
+            var info = tooltipDiv
+                .style("opacity", 1)
+                .style("left", (d3.event.pageX + 10) + "px")
+                .style("top", (d3.event.pageY - 30) + "px")
+                .text("Document: " + d.doc_id);
+
+            info.append("p")
+                    .text("Confidence: " + formatPercent(d.conf));
+
 
 
         })

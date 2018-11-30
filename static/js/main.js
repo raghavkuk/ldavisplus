@@ -1,48 +1,3 @@
-// d3.json(json_data, function (error, data) {
-
-//     initializeDataVariables(data);
-
-//     initializeForms(topicId, lambdaId, visId, data['lambda.step']);
-
-//     setupLambdaUpdateHandler(lambdaSelected);
-
-//     setupClickNextTopicHandler(nextTopic);
-
-//     setupClickPreviousTopicHandler(prevTopic);
-
-//     setupClickTopicCircleHandler(topicId);
-
-//     setupClickClearTopic(clearTopic);
-
-//     visSvg = d3.select(ldaDiv)
-//                 .append("svg")
-//                 .attr("width", topicVisWidth + termVisWidth + margin.left + interPanelWidth + margin.right)
-//                 .attr("height", topicVisHeight + 2 * margin.top + margin.bottom + maxTopicRadius);
-
-//     setupTopicScatterplot();
-
-//     setupTopicLegend();
-
-//     setupTermBarGraph();
-
-//     setupTermLegend();
-
-//     sentimentSvg = d3.select(sentimentDiv)
-//                         .append("svg")
-//                         .attr("width", sentimentVisWidth + margin.left + margin.right)
-//                         .attr("height", sentimentVisHeight + 2 * margin.top + margin.bottom + maxTopicRadius);
-
-
-//     forceDirSvg = d3.select(forceDirDiv)
-//                         .append("svg")
-//                         .attr("width", forceDirWidth + margin.left + margin.right)
-//                         .attr("height", forceDirHeight + 2 * margin.top + margin.bottom + maxTopicRadius);
-
-//     setupForceDirVis();
-
-// });
-
-
 init_params(json_data);
 
 function init_params(json_data) {
@@ -82,12 +37,18 @@ function init_params(json_data) {
 
     setupSentimentVis();
 
-    forceDirSvg = d3.select(forceDirDiv)
-                        .append("svg")
-                        .attr("width", forceDirWidth + margin.left + margin.right)
-                        .attr("height", forceDirHeight + 2 * margin.top + margin.bottom + maxTopicRadius);
+    onTopicSelected(document.getElementById(topicId + visState.topic));
 
+    initializeForceVisData();
     setupForceDirVis();
+
+    // forceDirSvg = d3.select(forceDirDiv)
+    //                     .append("svg")
+    //                     .attr("width", forceDirWidth + margin.left + margin.right)
+    //                     .attr("height", forceDirHeight + 2 * margin.top + margin.bottom + maxTopicRadius);
+
+    // initializeForceVisData();
+    // setupForceDirVis();
 }
 
 
