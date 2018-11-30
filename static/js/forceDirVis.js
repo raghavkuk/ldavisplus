@@ -4,7 +4,7 @@ function setupForceDirVis() {
     var maxStroke = 4.5;
     var baseNodeSize = 8;
     var maxBaseNodeSize = 36;
-    var normalTextSize = 10;
+    var normalTextSize = 15;
     var maxTextSize = 24;
     var defaultNodeColor = "#ccc";
     var defaultLinkColor = "#888";
@@ -19,19 +19,29 @@ function setupForceDirVis() {
     var minZoom = 0.1;
     var maxZoom = 7;
 
-    var min_score = 0;
-    var max_score = 1;
+    var min_score = 0.1;
+    var max_score = 0.7;
 
     var zoom = d3.behavior.zoom()
         .scaleExtent([minZoom, maxZoom]);
 
     var color = d3.scale.linear()
+        // .domain([60, (60+566)/2, 566])
         .domain([min_score, (min_score + max_score) / 2, max_score])
         .range(["#1f77b4", "#d62728"]);
 
     var size = d3.scale.pow().exponent(1)
-        .domain([1, 100])
-        .range([8, 24]);
+        .domain([200, 1700])
+        .range([3, 10]);
+
+    // if(typeof forceDirSvg !== "undefined")
+        d3.select(forceDirDiv).html("");
+    // else{
+        forceDirSvg = d3.select(forceDirDiv)
+                        .append("svg")
+                        .attr("width", forceDirWidth + margin.left + margin.right)
+                        .attr("height", forceDirHeight + 2 * margin.top + margin.bottom + maxTopicRadius);
+    // }
 
     var forceGroup = forceDirSvg.append("g");
 
@@ -41,19 +51,55 @@ function setupForceDirVis() {
         connections[d.source + "," + d.target] = true;
     });
 
+    // var set1 = {};
+    // for(var i=0; i<forceLinks.length; i++){
+    //     set1[forceLinks[i]["\"source\""]] = true;
+    //     set1[forceLinks[i]["\"target\""]] = true;
+    //     console.log(forceLinks[i]);
+    // }
+
+    // var set2 = {};
+    // for(var i=0; i<forceNodes.length; i++){
+    //     set2[forceNodes[i]["\"id\""]] = true;
+    //     console.log(forceNodes[i]);
+    // }
+
+    // console.log(set1);
+    // console.log(set2);
+
+    var edges = [];
+
+    forceLinks.forEach(function(e) {
+        var sourceNode = forceNodes.filter(function(n){
+            return n.id === e.source;
+        })[0],
+        targetNode = forceNodes.filter(function(n){
+            return n.id === e.target;
+        })[0];
+
+        edges.push({
+            source: sourceNode,
+            target: targetNode,
+            value: 10
+        });
+    });
+
     var forceLayout = d3.layout.force()
         .nodes(forceNodes)
-        .links(forceLinks)
+        .links(edges)
         .size([forceDirWidth, forceDirHeight])
         .linkDistance(250)
         .charge(-100)
         .start();
 
     var link = forceGroup.selectAll(".link")
-        .data(forceLinks)
+        .data(edges)
         .enter().append("line")
         .attr("class", "link")
-        .style("stroke-width", normalStroke)
+        .style("stroke-width", function(d){
+            var x =  countOccurences(edges, d.source);
+            return d.source.weight*d.target.weight/30;
+        })
         .style("stroke", function(d) {
             if (isNumber(d.score) && d.score >= 0)
                 return color(d.score);
@@ -93,15 +139,26 @@ function setupForceDirVis() {
         toWhite = "fill"
     }
 
+    function countOccurences(links, v){
+        var count = 0;
+        for(var i=0; i<links.length; i++){
+            if(links[i].source == v)
+                count++;
+            if(links[i].target == v)
+                count++;
+        }
+        return count;
+    }
+
 
     var circle = node.append("path")
         .attr("d", d3.svg.symbol()
-            .size(function(d) { return Math.PI * Math.pow(size(d.size) || baseNodeSize, 2); })
-            .type(function(d) { return d.type; }))
+            .size(function(d) { return Math.PI * Math.pow(size(d['size']) || baseNodeSize, 0.9); })
+            .type(function(d) { return "circle"; }))
 
         .style(toColor, function(d) {
-            if (isNumber(d.score) && d.score >= 0)
-                return color(d.score);
+            if (isNumber(d['score']) && d['score'] >= 0)
+                return color(d['score']);
             else
                 return defaultNodeColor;
         })
@@ -114,9 +171,9 @@ function setupForceDirVis() {
         .attr("dy", ".35em")
         .style("font-size", normalTextSize + "px")
         .attr("dx", function(d) {
-            return (size(d.size) || baseNodeSize);
+            return (baseNodeSize);
         })
-        .text(function(d) { return '\u2002' + d.id; });
+        .text(function(d) { return '\u2002' + d['name']; });
 
 
     forceLayout.on("tick", function() {
@@ -132,54 +189,6 @@ function setupForceDirVis() {
         node.attr("cx", function(d) { return d.x; })
             .attr("cy", function(d) { return d.y; });
     });
-
-    // zoom.on("zoom", function() {
-
-    //     var stroke = normalStroke;
-    //     if (normalStroke * zoom.scale() > maxStroke)
-    //         stroke = maxStroke / zoom.scale();
-
-    //     link.style("stroke-width", stroke);
-    //     circle.style("stroke-width", stroke);
-
-    //     var baseRadius = baseNodeSize;
-    //     if (baseNodeSize * zoom.scale() > maxBaseNodeSize)
-    //         baseRadius = maxBaseNodeSize / zoom.scale();
-
-    //     circle.attr("d", d3.svg.symbol()
-    //         .size(function(d) {
-    //             return Math.PI * Math.pow(size(d.size) * baseRadius / baseNodeSize || baseRadius, 2);
-    //         })
-    //         .type(function(d) {
-    //             return d.type;
-    //         }));
-
-    //     text.attr("dx", function(d) {
-    //         return (size(d.size) * baseRadius / baseNodeSize || baseRadius);
-    //     });
-
-    //     var textSize = normalTextSize;
-    //     if (normalTextSize * zoom.scale() > maxTextSize)
-    //         textSize = maxTextSize / zoom.scale();
-    //     text.style("font-size", textSize + "px");
-    //     forceGroup.attr("transform", "translate(" + d3.event.translate + ")scale(" + d3.event.scale + ")");
-    // });
-
-    // forceDirSvg.call(zoom);
-
-    // resize();
-
-    // d3.select(window).on("resize", resize);
-
-    // function resize() {
-    //     var width = forceDirWidth;
-    //     var height = forceDirHeight;
-    //     forceDirSvg.attr("width", width).attr("height", height);
-
-    //     forceLayout.size([forceLayout.size()[0] + (width - w) / zoom.scale(), force.size()[1] + (height - h) / zoom.scale()]).resume();
-    //     w = width;
-    //     h = height;
-    // }
 
 
     function isNumber(n) {
@@ -203,7 +212,7 @@ function setupForceDirVis() {
     }
 
     function isConnected(a, b) {
-        return connections[a.index + "," + b.index] || connections[b.index + "," + a.index] || a.index == b.index;
+        return connections[a.id + "," + b.id] || connections[b.id + "," + a.id] || a.id == b.id;
     }
 
     function exitFocus() {

@@ -138,6 +138,9 @@ function setupTopicScatterplot() {
             document.getElementById(topicId).value = visState.topic = d.topics;
             // state_save(true);
             onTopicSelected(this);
+            initializeForceVisData();
+            setupForceDirVis();
+            updateSentimentVis();
         })
         .on("mouseout", function(d) {
             if (visState.topic != d.topics)
@@ -211,4 +214,85 @@ function setupTopicLegend() {
         .attr('class', "circleGuideLabelLarge")
         .style("text-anchor", "start")
         .text(defaultLabelLarge);
+}
+
+function updateSentimentVis(){
+    //update sentiment vis
+    //Scale function for axes and radius
+    var padding = 25;
+    var topicSelected = visState.topic;
+    //Scale function for axes and radius
+    var max = sentimentData[topicSelected-1][0].conf;
+    var min = sentimentData[topicSelected-1][0].conf;
+
+    for(var i=0; i<sentimentData[topicSelected-1].length; i++){
+        if(sentimentData[topicSelected-1][i].conf < min)
+            min = sentimentData[topicSelected-1][i].conf;
+        if(sentimentData[topicSelected-1][i].conf > max)
+            max = sentimentData[topicSelected-1][i].conf;
+    }
+
+    min = min < 0 ? min : 0;
+
+    var yScale = d3.scale.linear()
+        .domain([min, max])
+        // .domain(d3.extent(sentimentData[topicSelected-1], function(d) { return d.conf; }))
+        .range([sentimentVisWidth + padding, padding]);
+
+    var xScale = d3.scale.ordinal()
+        .domain(sentimentData[visState.topic - 1].map(function(d) { return d.doc_id; }))
+        .rangeRoundBands([padding, sentimentVisHeight + padding], .5);
+
+    //To format axis as a percent
+    var formatPercent = d3.format("%1");
+
+    //Create y axis
+    var yAxis = d3.svg.axis().scale(yScale).orient("left").ticks(5).tickFormat(formatPercent);
+
+    //Define key function
+    var key = function(d) { return d.doc_id };
+
+    div = d3.select(sentimentDiv);
+
+    var rect = sentimentSvg.selectAll("rect")
+        .data(sentimentData[visState.topic - 1], key);
+    rect.exit().remove();
+
+    //Transition chart to new data
+    rect
+        .transition()
+        .duration(500)
+        .ease("linear")
+        .each("start", function() {
+            d3.select(this)
+                .attr("width", "0.2")
+                .attr("class", function(d) {
+                    if (d.pol == "positive")
+                        return "positive";
+                    else if (d.pol == "negative")
+                        return "negative";
+                    else
+                        return "neutral";
+                })
+        })
+        .attr({
+            x: function(d) {
+                return xScale(d.doc_id);
+            },
+            y: function(d) {
+                return yScale(Math.max(0, d.conf));
+            },
+            width: xScale.rangeBand(),
+            height: function(d) {
+                return Math.abs(yScale(d.conf) - yScale(0));
+            }
+
+        });
+
+    //Update y-axis
+    sentimentSvg.select(".y.axis")
+        .transition()
+        .duration(1000)
+        .ease("linear")
+        .call(yAxis);
 }

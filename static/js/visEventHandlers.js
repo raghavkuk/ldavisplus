@@ -27,7 +27,7 @@ function onTopicSelected(topicSelected) {
         .text("Top-" + numTerms + " Most Relevant Terms for Topic " + topic + " (" + Freq + "% of tokens)");
 
     // grab the bar-chart data for this topic only:
-    var barDataForTopic = termLambdaData.filter(function(d) {
+    barDataForTopic = termLambdaData.filter(function(d) {
         return d.Category == "Topic" + topic
     });
 
@@ -41,7 +41,7 @@ function onTopicSelected(topicSelected) {
     barDataForTopic.sort(keySort("relevance"));
 
     // truncate to the top R tokens:
-    var topTermsData = barDataForTopic.slice(0, numTerms);
+    topTermsData = barDataForTopic.slice(0, numTerms);
 
     // scale the bars to the top R terms:
     var newYScale = d3.scale.ordinal()
@@ -116,6 +116,7 @@ function onTopicSelected(topicSelected) {
     d3.selectAll(".xaxis")
         //.attr("class", "xaxis")
         .call(xAxis);
+
 }
 
 function onTopicUnseleted(topicUnselected) {
@@ -409,7 +410,7 @@ function reorderBars(isGreater) {
                 return newYScale(d.Term) + 12;
             });
 
-        // topic specific bar transition			
+        // topic specific bar transition            
         topicSpecificBarsEnter
             .attr("width", function(d) {
                 return newXScale(d.Freq);
@@ -562,5 +563,9 @@ function reorderBars(isGreater) {
         newAxis.transition().duration(transitionDuration)
             .transition().duration(transitionDuration)
             .call(xAxis);
+
     }
+
+    initializeForceVisData();
+    setupForceDirVis();
 }

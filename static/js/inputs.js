@@ -21,10 +21,10 @@ function initializeForms(topicId, lambdaId, visId, lambdaStep) {
     var topicInputBox = document.createElement("input");
     topicInputBox.setAttribute("style", "width: 50px");
     topicInputBox.type = "text";
-    topicInputBox.min = "0";
+    topicInputBox.min = "1";
     topicInputBox.max = numTopics;
     topicInputBox.step = "1";
-    topicInputBox.value = "0";
+    topicInputBox.value = visState.topic;
     topicInputBox.id = topicId;
     topicInputDiv.appendChild(topicInputBox);
 

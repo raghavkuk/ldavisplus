@@ -8,8 +8,15 @@ var topicData;
 var termData;
 var termLambdaData;
 
+var coocMatrix;
+var vocab;
+
 var forceNodes;
 var forceLinks;
+var sentimentData;
+
+var barDataForTopic;
+var topTermsData;
 
 var lambda = {
     old: 1,
@@ -79,7 +86,7 @@ var largeArea = Math.sqrt(0.10 * visArea * circleProportion / Math.PI);
 
 var visState = {
     lambda: 1,
-    topic: 0,
+    topic: 4,
     term: ""
 };
 
