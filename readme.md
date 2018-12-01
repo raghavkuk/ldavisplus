@@ -25,3 +25,5 @@ Now to run the server execute this command
 python3 manage.py runserver
 
 Now, Go to url http://localhost:8000/lda/ to see results.
+
+Datasets can be found in the database as well as in the data folder.
